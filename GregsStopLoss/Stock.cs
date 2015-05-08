@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices.ComTypes;
+
 namespace GregsStopLoss
 {
     /// <summary>
@@ -9,27 +11,25 @@ namespace GregsStopLoss
     internal class Stock
     {
         private readonly IHandle<Sell> _saleHandler;
-        private Pennies _latestPrice;
-        public Pennies PurchasePrice { get; private set; }
+
+        public Pennies LatestPrice { get; private set; }
 
         internal Stock(Pennies purchasePrice, IHandle<Sell> saleHandler)
         {
+            LatestPrice = purchasePrice;
             _saleHandler = saleHandler;
-            PurchasePrice = purchasePrice;
         }
 
         public void PriceChanged(Pennies newPrice)
         {
-            _latestPrice = newPrice;
-            if (_latestPrice.IsOneDollarLessThan(PurchasePrice))
+            if (newPrice.IsOneDollarLessThan(LatestPrice))
             {
-                _saleHandler.Handle(new Sell(this));
+                _saleHandler.Handle(new Sell(stock: this, atPrice: newPrice));
             }
-        }
-
-        public Pennies LatestPrice
-        {
-            get { return _latestPrice; }
+            else
+            {
+                LatestPrice = newPrice;
+            }
         }
     }
 }
